@@ -34,7 +34,6 @@ const run = async () => {
       )
       const token =
         '5987879116:AAEM_G_ZS5ogZLSALWTf_JezHxkta_9ujvI'
-
       console.log(filePath)
       const file = await axios
         .get(
@@ -52,7 +51,6 @@ const run = async () => {
               writer.close()
               reject(err)
             })
-
             writer.on('close', () => {
               if (!error) {
                 resolve(true)

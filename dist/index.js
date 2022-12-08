@@ -8,12 +8,7 @@ var __awaiter = (this && this.__awaiter) || function (thisArg, _arguments, P, ge
         step((generator = generator.apply(thisArg, _arguments || [])).next());
     });
 };
-var __importDefault = (this && this.__importDefault) || function (mod) {
-    return (mod && mod.__esModule) ? mod : { "default": mod };
-};
 Object.defineProperty(exports, "__esModule", { value: true });
-const axios_1 = __importDefault(require("axios"));
-const fs_1 = require("fs");
 const kafkajs_1 = require("kafkajs");
 const kafka = new kafkajs_1.Kafka({
     clientId: 'my-app',
@@ -29,40 +24,45 @@ const run = () => __awaiter(void 0, void 0, void 0, function* () {
     });
     yield consumer.run({
         eachMessage: ({ topic, partition, message }) => __awaiter(void 0, void 0, void 0, function* () {
-            var _a, _b;
-            console.log({
-                partition,
-                offset: message.offset,
-                value: message ? (_a = message.value) === null || _a === void 0 ? void 0 : _a.toString() : ''
-            });
-            const object = ((_b = message.value) === null || _b === void 0 ? void 0 : _b.toString())
-                ? JSON.parse(message.value.toString())
-                : {};
-            const filePath = object.file_path;
-            const fileName = object.file_name;
-            const writer = (0, fs_1.createWriteStream)(`./files/${fileName}`);
-            const token = '5987879116:AAEM_G_ZS5ogZLSALWTf_JezHxkta_9ujvI';
-            console.log(filePath);
-            const file = yield axios_1.default
-                .get(`https://api.telegram.org/file/bot${token}/${filePath}`, {
-                responseType: 'stream'
-            })
-                .then((response) => {
-                return new Promise((resolve, reject) => {
-                    response.data.pipe(writer);
-                    let error = null;
-                    writer.on('error', (err) => {
-                        error = err;
-                        writer.close();
-                        reject(err);
-                    });
-                    writer.on('close', () => {
-                        if (!error) {
-                            resolve(true);
-                        }
-                    });
-                });
-            });
+            // console.log({
+            //   partition,
+            //   offset: message.offset,
+            //   value: message ? message.value?.toString() : ''
+            // })
+            // const object = message.value?.toString()
+            //   ? JSON.parse(message.value.toString())
+            //   : {}
+            // const filePath = object.file_path
+            // const fileName = object.file_name
+            // const writer = createWriteStream(
+            //   `./files/${fileName}`
+            // )
+            // const token =
+            //   '5987879116:AAEM_G_ZS5ogZLSALWTf_JezHxkta_9ujvI'
+            // console.log(filePath)
+            // const file = await axios
+            //   .get(
+            //     `https://api.telegram.org/file/bot${token}/${filePath}`,
+            //     {
+            //       responseType: 'stream'
+            //     }
+            //   )
+            //   .then((response) => {
+            //     return new Promise((resolve, reject) => {
+            //       response.data.pipe(writer)
+            //       let error: null | any = null
+            //       writer.on('error', (err) => {
+            //         error = err
+            //         writer.close()
+            //         reject(err)
+            //       })
+            //       writer.on('close', () => {
+            //         if (!error) {
+            //           resolve(true)
+            //         }
+            //       })
+            //     })
+            //   })
         })
     });
 });
