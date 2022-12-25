@@ -26,7 +26,7 @@ const kafkaConsumer = async () => {
       const filePath = object.file_path
       const fileName = object.file_name
       const writer = createWriteStream(
-        `./files/${fileName}`
+        `./files/photos/${fileName}`
       )
       const token =
         '5987879116:AAEM_G_ZS5ogZLSALWTf_JezHxkta_9ujvI'
