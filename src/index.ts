@@ -1,6 +1,6 @@
 import express from 'express'
 import fs from 'fs'
-import searchFile from './gdrive/get_files'
+// import searchFile from './gdrive/get_files'
 const app = express()
 import kafkaConsumer from './kafka_consumer'
 
@@ -12,6 +12,7 @@ app.get('/', async (req, res) => {
     images: payload
   })
 })
+
 
 interface image {
   file_name: string
@@ -44,6 +45,6 @@ app.listen(8080, () => {
   console.log('server started')
 })
 
-searchFile().catch(console.error)
+// searchFile().catch(console.error)
 
 kafkaConsumer().catch(console.error)
