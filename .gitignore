@@ -86,3 +86,6 @@ tests/cases/user/prettier/prettier
 .eslintcache
 *v8.log
 dist/**/*.js
+logs
+files
+pakage-lock.json

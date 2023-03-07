@@ -6,7 +6,7 @@ export default class GetImagesService {
     const images: Iimage[] = []
     const path = './files/photos/' // TODO: Export to ENV var?
     fs.readdirSync(path).forEach((fileName) => {
-      const filePath: string = `${path}${fileName}`
+      const filePath = `${path}${fileName}`
       const fileData: string = this.toBase64(filePath)
       const image: Iimage = new GetImagesDomain(
         fileName,
