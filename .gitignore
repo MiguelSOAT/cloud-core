@@ -89,3 +89,4 @@ dist/**/*.js
 logs
 files
 pakage-lock.json
+dist
