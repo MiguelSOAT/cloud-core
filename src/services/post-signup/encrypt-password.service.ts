@@ -23,8 +23,8 @@ export default class EncryptPasswordService {
 
       return new EncryptPasswordDomain(
         username,
-        hashedPassword.toString('hex'),
-        salt.toString('hex')
+        Buffer.from(hashedPassword).toString('hex'),
+        Buffer.from(salt).toString('hex')
       )
     } catch (error) {
       logger.error('Error while trying to encrypt password')

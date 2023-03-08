@@ -29,7 +29,7 @@ export default class MYSQLDB {
   public query(sql: string, args: any[]) {
     return new Promise((resolve, reject) => {
       // To prevent SQL injection, we use the mysql library's query method. with ? placeholders
-      this.db.query(sql, args, (err, rows) => {
+      this.db.query(sql, args, (err, rows: any[]) => {
         if (err) {
           return reject(err)
         }
