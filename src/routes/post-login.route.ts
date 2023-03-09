@@ -6,14 +6,26 @@ import Logger from '../infrastructure/logger'
 const LocalStrategy = require('passport-local')
 const router = express.Router()
 
-function check(password: any, user: any, cb: any) {
+passport.serializeUser(function (user: any, done) {
+  process.nextTick(function () {
+    done(null, { id: user.id, username: user.username })
+  })
+})
+
+passport.deserializeUser(function (user: any, done) {
+  process.nextTick(function () {
+    return done(null, user)
+  })
+})
+
+function check(password: any, user: any, done: any) {
   Logger.verbose('User salt', { user })
   const decodedSalt: Buffer = Buffer.from(user.salt, 'hex')
   const decodedHashedPassword: Buffer = Buffer.from(
     user.hashed_password,
     'hex'
   )
-  return crypto.pbkdf2(
+  const a = crypto.pbkdf2(
     password,
     decodedSalt,
     100000,
@@ -22,7 +34,7 @@ function check(password: any, user: any, cb: any) {
     function (err, hashedPassword) {
       if (err) {
         Logger.error('Error while checking password')
-        return cb(err)
+        done(err) // TODO
       }
 
       Logger.info('Checking password')
@@ -33,23 +45,26 @@ function check(password: any, user: any, cb: any) {
         )
       ) {
         Logger.error('Incorrect password')
-        return cb(null, false, {
+        done(null, false, {
           message: 'Incorrect username or password.'
         })
       }
       Logger.verbose('Password correct', {
-        cb: cb.toString()
+        user: { id: user.id, username: user.username }
       })
-      return cb(null, user)
+      return done(null, user)
     }
   )
+
+  Logger.verbose('a', { a })
+  return a
 }
 
 passport.use(
   new LocalStrategy(async function verify(
     username: any,
     password: any,
-    cb: any
+    done: any
   ) {
     const db = new MYSQLDB()
     db.connect()
@@ -62,23 +77,46 @@ passport.use(
       const rows = (await query) as any[]
       Logger.verbose('User found', { rows })
       if (!rows) {
-        return cb(null, false, {
+        return done(null, false, {
           message: 'Incorrect username or password.'
         })
       }
-      return check(password, rows[0], cb)
+      //
+      return check(password, rows[0], done)
+      // Logger.verbose('b', { b })
     } catch (error) {
-      return cb(error)
+      return done(error)
     }
   })
 )
-router.post(
-  '/login/password',
-  passport.authenticate('local', {
-    successReturnToOrRedirect: '/',
-    failureRedirect: '/login',
-    failureMessage: true
-  })
-)
+
+router.post('/login/password', function (req, res, next) {
+  passport.authenticate(
+    'local',
+    function (error: any, user: any, info: any) {
+      // A error also means, an unsuccessful login attempt
+      if (error) {
+        console.error(error)
+        console.log('Failed login:')
+        // And do whatever you want here.
+        return next(new Error('AuthenticationError'))
+      }
+
+      if (user === false) {
+        // handle login error ...
+        console.log('Failed login:')
+        return next(new Error('AuthenticationError'))
+      } else {
+        // handle successful login ...
+        console.log('Successful login:')
+        // res.redirect('./')
+
+        res.send({
+          user: req.user
+        })
+      }
+    }
+  )(req, res, next)
+})
 
 export default router
