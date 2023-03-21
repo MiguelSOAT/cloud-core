@@ -4,6 +4,7 @@ import { Kafka } from 'kafkajs'
 import env from 'dotenv'
 import { loggers } from 'winston'
 import logger from './infrastructure/logger'
+import User from './models/user/user.model'
 // import app from './router'
 const kafka = new Kafka({
   clientId: 'my-app',
@@ -18,23 +19,41 @@ const saveDownloadedFile = (
 ) => {
   return new Promise((resolve, reject) => {
     const fileName = object.file_name
-    const writer: WriteStream = createWriteStream(
-      `${process.env.PHOTOS_DIRECTORY}${fileName}`
-    )
+    const userId = object.telegram_token
+    const user = new User()
+    user
+      .findById(userId)
+      .then((userData) => {
+        if (userData) {
+          const userDirectory = `${process.env.PHOTOS_DIRECTORY}${userData.username}/`
 
-    response.data.pipe(writer)
-    let error: null | any = null
-    writer.on('error', (err: any) => {
-      logger.error(`ERROR writing file: ${err}`)
-      error = err
-      writer.close()
-      reject(err)
-    })
-    writer.on('close', () => {
-      if (!error) {
-        resolve(true)
-      }
-    })
+          const writer: WriteStream = createWriteStream(
+            `${userDirectory}${fileName}`
+          )
+
+          response.data.pipe(writer)
+          let error: null | any = null
+          writer.on('error', (err: any) => {
+            logger.error(`ERROR writing file: ${err}`)
+            error = err
+            writer.close()
+            reject(err)
+          })
+          writer.on('close', () => {
+            if (!error) {
+              resolve(true)
+            }
+          })
+        } else {
+          reject(new Error('User not found'))
+        }
+      })
+      .catch((err) => {
+        logger.error(
+          `Error finding user while processing kafka telegram job: ${err}`
+        )
+        reject(err)
+      })
   })
 }
 

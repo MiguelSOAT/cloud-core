@@ -1,8 +1,11 @@
 import express from 'express'
-import getImagesRouter from './routes/get-images.router'
-import signupRouter from './routes/post-signup.router'
-import loginRouter from './routes/post-login.route'
-// import searchFile from './gdrive/get_files'
+import getImagesRouter from './API/files/routes/get-images.router'
+import loginRouter from './API/authentication/routes/post-login.route'
+import signupRouter from './API/authentication/routes/post-signup.route'
+import logoutRouter from './API/authentication/routes/post-logout.route'
+import postTelegramToken from './API/user/telegram-token/routes/put-telegram-token.router'
+import putTelegramToken from './API/user/telegram-token/routes/put-telegram-token.router'
+
 const app = express()
 import kafkaConsumer from './kafka_consumer'
 import env from 'dotenv'
@@ -11,9 +14,8 @@ import session from 'express-session'
 import csrf from 'csurf'
 import passport from 'passport'
 import createError from 'http-errors'
-import Logger from './infrastructure/logger'
-const LocalStrategy = require('passport-local')
-import logoutRouter from './routes/post-logout.route'
+import passportConfiguration from './infrastructure/passport'
+
 env.config()
 
 // Router
@@ -33,26 +35,17 @@ app.use(passport.initialize())
 app.use(passport.session())
 app.use(passport.authenticate('session'))
 
-app.use(function (req, res, next) {
-  console.log(req.body)
-  const msgs = req.session.messages || []
-  res.locals.messages = msgs
-  res.locals.hasMessages = !!msgs.length
-  req.session.messages = []
-  next()
-})
-// app.use(function (req, res, next) {
-//   res.locals.csrfToken = req.csrfToken()
-//   next()
-// })
+passportConfiguration()
 
 app.use('/v1', getImagesRouter)
 app.use('/v1', signupRouter)
 app.use('/v1', loginRouter)
 app.use('/v1', logoutRouter)
+app.use('/v1', postTelegramToken)
+app.use('/v1', putTelegramToken)
 
 app.use(function (req, res, next) {
-  // next(createError(404))
+  next(createError(404))
 })
 
 app.listen(8080, () => {
