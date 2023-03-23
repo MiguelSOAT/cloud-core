@@ -1,10 +1,13 @@
-export interface IFile {
-  id: number
+export interface IFileBase {
   fileName: string
   fileSize: number
   fileType: string
   fileExtension: string
   uuid: string
+  size: number
+}
+export interface IFile extends IFileBase {
+  id: number
 }
 
 export interface IUserFiles {

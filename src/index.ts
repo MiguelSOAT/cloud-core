@@ -15,10 +15,19 @@ import csrf from 'csurf'
 import passport from 'passport'
 import createError from 'http-errors'
 import passportConfiguration from './infrastructure/passport'
+import cors from 'cors'
 
 env.config()
 
 // Router
+app.use(
+  cors({
+    origin: 'http://localhost:3000',
+    preflightContinue: true,
+    credentials: true
+  })
+)
+app.options('*', cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
@@ -45,6 +54,7 @@ app.use('/v1', postTelegramToken)
 app.use('/v1', putTelegramToken)
 
 app.use(function (req, res, next) {
+  console.log('NO EXISTE ESE PATH')
   next(createError(404))
 })
 

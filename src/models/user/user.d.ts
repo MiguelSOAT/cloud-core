@@ -1,6 +1,6 @@
 export interface IUser {
   id?: number
-  username: string
+  username?: string
 }
 
 export interface IUserCredentials {
@@ -15,4 +15,10 @@ export interface IUserDBData
   createdAt: Date
   hashedPassword: string
   salt: string
+}
+
+export interface IUserSignupResponse {
+  status: number
+  message?: string
+  token?: string
 }

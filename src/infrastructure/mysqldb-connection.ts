@@ -16,11 +16,16 @@ export default class MYSQLDBConnectionConnection {
   }
 
   public connect() {
-    this.db.connect((err) => {
-      if (err) {
-        logger.error('Error connecting to mysql database')
-      }
-    })
+    if (this.db.state === 'disconnected') {
+      this.db.connect((err) => {
+        logger.verbose('Connecting to mysql database', {
+          state: this.db.state
+        })
+        if (err) {
+          logger.error('Error connecting to mysql database')
+        }
+      })
+    }
   }
 
   public query(sql: string, args: any[]): any {
@@ -38,10 +43,7 @@ export default class MYSQLDBConnectionConnection {
     })
   }
 
-  public async close() {
-    this.db.end(async () => {
-      logger.info('Mysql connection closed')
-      return true
-    })
+  public async close(): Promise<void> {
+    // this.db.end()
   }
 }

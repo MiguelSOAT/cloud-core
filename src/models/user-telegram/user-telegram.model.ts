@@ -1,3 +1,4 @@
+import Logger from '../../infrastructure/logger'
 import MYSQLDB from '../mysqldb/mysqldb.model'
 import {
   IUserTelegramDBData,
@@ -8,17 +9,22 @@ export default class UserTelegram
   extends MYSQLDB<IUserTelegramDBData>
   implements IUserTelegram
 {
-  userId: number
-  telegramToken?: string
+  public userId?: number
+  public telegramToken?: string
 
   table = 'USER_TELEGRAM'
 
-  constructor(userId: number) {
+  constructor() {
     super()
-    this.userId = userId
   }
 
   public async findByUserId(): Promise<void> {
+    if (!this.userId) {
+      Logger.error('[UserTelegram] User id not set', {
+        userId: this.userId
+      })
+      throw new Error('User id not set')
+    }
     const values = ['*']
     const conditions = ['userId']
     const conditionsValues = [this.userId]
@@ -35,7 +41,7 @@ export default class UserTelegram
 
   public async findByTelegramToken(
     telegramToken: string
-  ): Promise<number | null> {
+  ): Promise<void> {
     const values = ['*']
     const conditions = ['telegramToken']
     const conditionsValues = [telegramToken]
@@ -47,12 +53,18 @@ export default class UserTelegram
         conditionsValues
       )
 
-    return dbData[0]?.userId || null
+    this.setUserFilesFromDbResponse(dbData)
   }
 
   public async updateByUserId(
     telegramToken: string
   ): Promise<void> {
+    if (!this.userId) {
+      Logger.error('[UserTelegram] User id not set', {
+        userId: this.userId
+      })
+      throw new Error('User id not set')
+    }
     const conditions = ['userId']
     const conditionsValues = [this.userId]
     const keys = ['telegramToken']
@@ -69,6 +81,12 @@ export default class UserTelegram
   public async insertNewToken(
     telegramToken: string
   ): Promise<void> {
+    if (!this.userId) {
+      Logger.error('[UserTelegram] User id not set', {
+        userId: this.userId
+      })
+      throw new Error('User id not set')
+    }
     const keys = ['userId', 'telegramToken']
     const values = [this.userId, telegramToken]
     await super.insert(this.table, keys, values)
@@ -78,5 +96,6 @@ export default class UserTelegram
     dbData: IUserTelegramDBData[]
   ): void {
     this.telegramToken = dbData[0]?.telegramToken
+    this.userId = dbData[0]?.userId
   }
 }

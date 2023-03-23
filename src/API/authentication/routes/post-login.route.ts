@@ -17,7 +17,9 @@ router.post('/login/password', function (req, res, next) {
               info: info
             }
           )
-          return next(err)
+          return res.status(401).json({
+            message: info.message
+          })
         } else {
           req.login(
             userData,
@@ -29,7 +31,19 @@ router.post('/login/password', function (req, res, next) {
               user.setUserDataFromDB([userData])
               const token = user.getSessionToken()
 
-              return res.json({ token })
+              const defaultExpirationTime = '0.5'
+              res.cookie('token', token, {
+                maxAge:
+                  parseInt(
+                    process.env.COOKIE_EXPIRATION_TIME ||
+                      `${defaultExpirationTime}`
+                  ) *
+                  1000 *
+                  3600,
+                httpOnly: true
+              })
+
+              return res.send('OK')
             }
           )
         }

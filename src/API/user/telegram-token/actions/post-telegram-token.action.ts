@@ -6,7 +6,8 @@ export default class PostTelegramTokenAction {
     userId: number,
     telegramToken: string
   ): Promise<HttpError<400> | undefined> {
-    const user = new UserTelegram(userId)
+    const user = new UserTelegram()
+    user.userId = userId
     await user.findByUserId()
 
     if (user.telegramToken) {

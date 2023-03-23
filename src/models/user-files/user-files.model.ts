@@ -2,7 +2,8 @@ import MYSQLDB from '../mysqldb/mysqldb.model'
 import {
   IUserFilesDBData,
   IUserFiles,
-  IFile
+  IFile,
+  IFileBase
 } from './user-files'
 
 export default class UserFiles
@@ -74,14 +75,17 @@ export default class UserFiles
     }
   }
 
-  public async insertNewFile(file: IFile): Promise<void> {
+  public async insertNewFile(
+    file: IFileBase
+  ): Promise<void> {
     const keys = [
       'userId',
       'fileName',
       'fileSize',
       'fileType',
       'fileExtension',
-      'uuid'
+      'uuid',
+      'size'
     ]
     const values = [
       this.userId,
@@ -89,7 +93,8 @@ export default class UserFiles
       file.fileSize,
       file.fileType,
       file.fileExtension,
-      file.uuid
+      file.uuid,
+      file.size
     ]
     await super.insert(this.table, keys, values)
   }
@@ -110,7 +115,8 @@ export default class UserFiles
           fileSize: file.fileSize,
           fileType: file.fileType,
           fileExtension: file.fileExtension,
-          uuid: file.uuid
+          uuid: file.uuid,
+          size: file.size
         })
       }
     }

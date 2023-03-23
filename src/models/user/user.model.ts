@@ -1,4 +1,8 @@
-import { IUser, IUserDBData } from './user'
+import {
+  IUser,
+  IUserDBData,
+  IUserSignupResponse
+} from './user'
 import MYSQLDB from '../mysqldb/mysqldb.model'
 import crypto from 'node:crypto'
 import logger from '../../infrastructure/logger'
@@ -8,8 +12,8 @@ export default class User
   extends MYSQLDB<IUserDBData>
   implements IUser
 {
-  id?: number
-  username = 'No user created'
+  public id?: number
+  public username?: string
   hashedPassword?: string
   salt?: string
 
@@ -21,10 +25,16 @@ export default class User
   }
 
   public getUsername(): string {
-    return this.username
+    return this.username || ''
   }
 
   public async findByUsername(): Promise<IUserDBData | null> {
+    if (!this.username) {
+      logger.error(
+        `Couldn't find user in DB. Username not defined.`
+      )
+      return null
+    }
     const values = ['*']
     const conditions = ['username']
     const conditionsValues = [this.username]
@@ -58,7 +68,24 @@ export default class User
     return dbData[0] || null
   }
 
-  private async insertNewAccount(): Promise<void> {
+  private async insertNewAccount(): Promise<IUserSignupResponse> {
+    const response: IUserSignupResponse = {
+      status: 200
+    }
+
+    if (
+      !this.username ||
+      !this.hashedPassword ||
+      !this.salt
+    ) {
+      logger.error(
+        `Couldn't intert user in DB. Username, password or salt not defined.`
+      )
+      throw new Error(
+        'Username, password or salt not found'
+      )
+    }
+
     if (!this.hashedPassword || !this.salt) {
       logger.error(
         `Couldn't intert user in DB. Password or salt not created.`
@@ -73,12 +100,35 @@ export default class User
       this.salt
     ]
 
-    super.insert(this.table, keys, values)
+    try {
+      await super.insert(this.table, keys, values)
+      logger.info('User inserted in DB successfully')
+      await this.findByUsername()
+      logger.info('User found in DB successfully')
+      response.token = this.getSessionToken()
+      logger.verbose('User token created successfully', {
+        token: response.token
+      })
+    } catch (error: any) {
+      logger.error(
+        'Error while trying to create user in DB',
+        error
+      )
+      response.message =
+        error.code === 'ER_DUP_ENTRY'
+          ? 'Username already exists'
+          : 'Error while signing up'
+      response.status = 500
+    }
+
+    return response
   }
 
-  public async create(password: string): Promise<void> {
+  public async create(
+    password: string
+  ): Promise<IUserSignupResponse> {
     await this.encryptPassword(password)
-    await this.insertNewAccount()
+    return this.insertNewAccount()
   }
 
   public async encryptPassword(password: string) {
@@ -99,8 +149,12 @@ export default class User
         Buffer.from(hashedPassword).toString('hex')
       this.salt = Buffer.from(salt).toString('hex')
     } catch (error) {
-      logger.error('Error while trying to encrypt password')
-      throw error
+      logger.error(
+        'Error while trying to encrypt password',
+        {
+          password
+        }
+      )
     }
   }
 

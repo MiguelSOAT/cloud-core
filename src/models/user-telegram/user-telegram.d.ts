@@ -1,5 +1,5 @@
 export interface IUserTelegram {
-  userId: number
+  userId?: number
   telegramToken?: string
 }
 

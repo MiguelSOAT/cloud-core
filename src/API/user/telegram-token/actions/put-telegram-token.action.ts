@@ -5,7 +5,8 @@ export default class PutTelegramTokenAction {
     userId: number,
     telegramToken: string
   ): Promise<void> {
-    const user = new UserTelegram(userId)
+    const user = new UserTelegram()
+    user.userId = userId
     await user.findByUserId()
 
     await user.updateByUserId(telegramToken)
