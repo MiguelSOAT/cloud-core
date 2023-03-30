@@ -19,23 +19,8 @@ router.post('/signup', async (req, res, next) => {
     const response: IUserSignupResponse = await user.create(
       password
     )
-
-    if (response.status === 200 && response.token) {
-      const defaultExpirationTime = '0.5'
-      res.cookie('cloudToken', response.token, {
-        maxAge:
-          parseInt(
-            process.env.COOKIE_EXPIRATION_TIME ||
-              `${defaultExpirationTime}`
-          ) *
-          1000 *
-          3600,
-        httpOnly: true
-      })
-    }
     res.status(response.status).send({
-      message: response.message,
-      token: response.token
+      message: response.message
     })
   } catch (e) {
     res.status(500).send()

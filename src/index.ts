@@ -5,6 +5,7 @@ import signupRouter from './API/authentication/routes/post-signup.route'
 import logoutRouter from './API/authentication/routes/post-logout.route'
 import postTelegramToken from './API/user/telegram-token/routes/put-telegram-token.router'
 import putTelegramToken from './API/user/telegram-token/routes/put-telegram-token.router'
+import authenticateRouter from './API/authentication/routes/authenticated.route'
 
 const app = express()
 import kafkaConsumer from './kafka_consumer'
@@ -16,45 +17,52 @@ import passport from 'passport'
 import createError from 'http-errors'
 import passportConfiguration from './infrastructure/passport'
 import cors from 'cors'
+import Logger from './infrastructure/logger'
 
 env.config()
 
-// Router
-app.use(
-  cors({
-    origin: 'http://localhost:3000',
-    preflightContinue: true,
-    credentials: true
-  })
-)
-app.options('*', cors())
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
 app.use(
   session({
-    secret: 'keyboard cat',
+    secret: process.env.SESSION_TOKEN || 'secret',
     resave: false, // don't save session if unmodified
-    saveUninitialized: true,
-    cookie: { maxAge: 60000 }
+    saveUninitialized: false,
+    cookie: {
+      maxAge:
+        parseInt(
+          process.env.COOKIE_EXPIRATION_TIME || '1800'
+        ) * 1000
+    }
   })
 )
 // app.use(csrf())
 app.use(passport.initialize())
 app.use(passport.session())
-app.use(passport.authenticate('session'))
+// app.use(passport.authenticate('session'))
 
 passportConfiguration()
-
-app.use('/v1', getImagesRouter)
 app.use('/v1', signupRouter)
 app.use('/v1', loginRouter)
 app.use('/v1', logoutRouter)
-app.use('/v1', postTelegramToken)
-app.use('/v1', putTelegramToken)
 
 app.use(function (req, res, next) {
-  console.log('NO EXISTE ESE PATH')
+  if (req.isAuthenticated()) {
+    // Si el usuario está autenticado, continuar con la solicitud
+    return next()
+  }
+  // Si el usuario no está autenticado, redirigir a la página de inicio de sesión
+  res.redirect('/login')
+})
+
+app.use('/v1', getImagesRouter)
+app.use('/v1', postTelegramToken)
+app.use('/v1', putTelegramToken)
+app.use('/v1', authenticateRouter)
+
+app.use(function (req, res, next) {
+  Logger.error('404 Not Found', req.originalUrl)
   next(createError(404))
 })
 
