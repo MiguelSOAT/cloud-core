@@ -6,6 +6,8 @@ import User from './models/user/user.model'
 import UserTelegram from './models/user-telegram/user-telegram.model'
 import UserFiles from './models/user-files/user-files.model'
 import fs from 'fs'
+import sharp from 'sharp'
+import { IFileBase } from './models/user-files/user-files'
 
 const kafka = new Kafka({
   clientId: 'my-app',
@@ -13,6 +15,18 @@ const kafka = new Kafka({
 })
 
 const consumer = kafka.consumer({ groupId: 'test-group' })
+
+const imageExtensions = [
+  'jpg',
+  'jpeg',
+  'png',
+  // 'gif',
+  // 'bmp',
+  // 'svg',
+  // 'tiff',
+  // 'raw',
+  'webp'
+]
 
 const saveDownloadedFile = (
   object: any,
@@ -48,7 +62,6 @@ const saveDownloadedFile = (
 }
 
 const kafkaConsumer = async () => {
-  // Consuming
   await consumer.connect()
   await consumer.subscribe({
     topic: 'telegram',
@@ -86,7 +99,6 @@ async function messageProcessor(
     if (user?.id) {
       const userDirectory = `${process.env.PHOTOS_DIRECTORY}${user.username}/`
 
-      // check if directory exist else create directory
       if (!fs.existsSync(userDirectory)) {
         logger.info(
           `Creating directory new directory: ${userDirectory}`
@@ -102,15 +114,16 @@ async function messageProcessor(
         userDirectory
       )
       if (isSaved) {
-        const userFiles = new UserFiles(user.id)
-        await userFiles.insertNewFile({
-          fileName: object.file_name,
-          fileSize: object.file_size,
-          fileType: object.mime_type,
-          fileExtension: object.file_extension,
-          uuid: object.uuid,
-          size: object.size
-        })
+        if (
+          object.size === 0 &&
+          imageExtensions.includes(object.file_extension)
+        ) {
+          object.size = 3
+          await saveFile(object, user)
+          await processRawImage(object, user)
+        } else {
+          await saveFile(object, user)
+        }
       }
     }
   } catch (error) {
@@ -122,11 +135,92 @@ async function messageProcessor(
     )
   }
 }
+
+const saveFile = async (
+  object: any,
+  user: User | undefined
+) => {
+  if (user?.id) {
+    const userFiles = new UserFiles(user.id)
+    await userFiles.insertNewFile({
+      fileName: object.file_name,
+      fileSize: object.file_size,
+      fileType: object.mime_type,
+      fileExtension: object.file_extension,
+      uuid: object.uuid,
+      size: object.size
+    })
+  }
+}
+
+const processRawImage = async (
+  object: any,
+  user: User | undefined
+) => {
+  if (!user?.id)
+    throw new Error(
+      'Error while processing image, user not found'
+    )
+  const sizes = [
+    {
+      size: 90,
+      relativeSize: 1
+    },
+    {
+      size: 320,
+      relativeSize: 2
+    }
+  ]
+
+  for (const size of sizes) {
+    const resizedImageData = await resizeImage(
+      object,
+      user,
+      size.size,
+      size.relativeSize
+    )
+
+    const userFiles = new UserFiles(user.id)
+    await userFiles.insertNewFile(resizedImageData)
+  }
+}
+
+const resizeImage = async (
+  object: any,
+  user: User | undefined,
+  size: number,
+  relativeSize: number
+): Promise<IFileBase> => {
+  const userDirectory = `${process.env.PHOTOS_DIRECTORY}${user?.username}/`
+  const fileName = object.file_name
+  const resizedFileName = `resized_${size}_${fileName}`
+  const filePath = `${userDirectory}${fileName}`
+  const resizedFilePath = `${userDirectory}${resizedFileName}`
+
+  const resizedImage = await sharp(filePath)
+    .resize({
+      width: size,
+      height: size,
+      fit: sharp.fit.outside
+    })
+    .png()
+    .toFile(resizedFilePath)
+
+  return {
+    fileName: resizedFileName,
+    fileSize: resizedImage.size,
+    fileType: object.mime_type,
+    fileExtension: 'png',
+    uuid: object.uuid,
+    size: relativeSize
+  }
+}
+
 const getUserByTelegramToken = async (
-  telegramToken: string
+  telegramId: string
 ): Promise<User | undefined> => {
   const userTelegram = new UserTelegram()
-  await userTelegram.findByTelegramToken(telegramToken)
+  await userTelegram.findByTelegramId(telegramId)
   const user = new User()
   if (userTelegram.userId) {
     logger.info(`User found`)

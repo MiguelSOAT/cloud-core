@@ -6,24 +6,45 @@ export default class MYSQLDB<T> extends MYSQLDBConnection {
   }
 
   private getConditionsString(
-    conditions: string[]
+    conditions: string[],
+    customConditions?: string[]
   ): string {
-    return conditions
+    let conditionString = conditions
       .map((condition) => `${condition} = ?`)
       .join(' AND ')
+    if (customConditions) {
+      conditionString += `${
+        conditionString.length ? ' AND' : ''
+      } ${customConditions.join(' AND ')}`
+    }
+
+    return conditionString
   }
 
   public async select(
     table: string,
     values: string[],
     conditions: string[],
-    conditionsValues: (number | string)[]
+    conditionsValues: (number | string)[],
+    customConditions?: string[],
+    groupBy?: string[],
+    orderBy?: string,
+    ascOrDesc?: string,
+    limitOffset?: string
   ): Promise<T[]> {
     const sql = `SELECT ${values.join(
       ', '
     )} FROM ${table} WHERE ${this.getConditionsString(
-      conditions
-    )}`
+      conditions,
+      customConditions
+    )}
+    ${
+      orderBy
+        ? `ORDER BY ${orderBy} ${ascOrDesc || 'DESC'}`
+        : ''
+    }
+    ${limitOffset ? `LIMIT ${limitOffset}` : ''}
+    `
     const args = conditionsValues
 
     super.connect()

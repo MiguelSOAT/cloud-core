@@ -1,6 +1,7 @@
 export interface IUserTelegram {
   userId?: number
-  telegramToken?: string
+  telegramId?: string
+  securityToken?: string
 }
 
 export interface IUserTelegramDBData extends IUserTelegram {

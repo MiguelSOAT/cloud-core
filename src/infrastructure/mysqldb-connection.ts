@@ -11,7 +11,8 @@ export default class MYSQLDBConnectionConnection {
       user: process.env.DB_USER,
       password: process.env.DB_PASSWORD,
       database: process.env.DB_NAME,
-      charset: 'utf8mb4'
+      charset: 'utf8mb4',
+      connectTimeout: 1000
     })
   }
 

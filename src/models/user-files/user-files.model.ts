@@ -10,8 +10,8 @@ export default class UserFiles
   extends MYSQLDB<IUserFilesDBData>
   implements IUserFiles
 {
-  userId: number
-  files: IFile[]
+  public userId: number
+  public files: IFile[]
   table = 'USER_FILES'
 
   constructor(userId: number) {
@@ -20,10 +20,54 @@ export default class UserFiles
     this.files = []
   }
 
-  public async findByUserId(): Promise<IUserFilesDBData | null> {
+  public async findByUserId(
+    page?: number,
+    pageSize?: number,
+    size?: number
+  ): Promise<IUserFilesDBData | null> {
     const values = ['*']
     const conditions = ['userId']
     const conditionsValues = [this.userId]
+    let limitOffset = ''
+
+    if (page && pageSize) {
+      const offset = (page - 1) * pageSize
+      const limit = pageSize
+      limitOffset = `${offset}, ${limit}`
+    }
+
+    let customConditions
+    if (size) {
+      customConditions = ['size in (0,?)']
+      conditionsValues.push(size)
+    }
+
+    const orderBy = 'createdAt'
+    const ascOrDesc = 'DESC'
+    const groupBy = ['size']
+    const dbData: IUserFilesDBData[] = await super.select(
+      this.table,
+      values,
+      conditions,
+      conditionsValues,
+      customConditions,
+      groupBy,
+      orderBy,
+      ascOrDesc,
+      limitOffset
+    )
+
+    this.setUserFilesFromDbResponse(dbData)
+
+    return dbData[0] || null
+  }
+
+  public async findByFileId(
+    fileId: number
+  ): Promise<IUserFilesDBData | null> {
+    const values = ['*']
+    const conditions = ['id', 'userId']
+    const conditionsValues = [fileId, this.userId]
     const dbData: IUserFilesDBData[] = await super.select(
       this.table,
       values,
@@ -36,17 +80,22 @@ export default class UserFiles
     return dbData[0] || null
   }
 
-  public async findByFileId(
-    fileId: string
+  public async findByFileUUID(
+    uuid: string,
+    sizes: number[]
   ): Promise<IUserFilesDBData | null> {
     const values = ['*']
-    const conditions = ['fileId', 'userId']
-    const conditionsValues = [fileId, this.userId]
+    const conditions = ['uuid', 'userId']
+    const conditionsValues = [uuid, this.userId]
+    const customConditions = [
+      `size in (${sizes.join(',')})`
+    ]
     const dbData: IUserFilesDBData[] = await super.select(
       this.table,
       values,
       conditions,
-      conditionsValues
+      conditionsValues,
+      customConditions
     )
 
     this.setUserFilesFromDbResponse(dbData)
@@ -101,15 +150,11 @@ export default class UserFiles
 
   private setUserFilesFromDbResponse(
     dbData: IUserFilesDBData[]
-  ): IUserFiles | null {
-    let userFiles: IUserFiles | null = null
+  ): void {
     if (dbData.length > 0) {
-      userFiles = {
-        userId: dbData[0].userId,
-        files: []
-      }
+      this.userId = dbData[0].userId
       for (const file of dbData) {
-        userFiles.files.push({
+        this.files.push({
           id: file.id,
           fileName: file.fileName,
           fileSize: file.fileSize,
@@ -120,7 +165,5 @@ export default class UserFiles
         })
       }
     }
-
-    return userFiles
   }
 }

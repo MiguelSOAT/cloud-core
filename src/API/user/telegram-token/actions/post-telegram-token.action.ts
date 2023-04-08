@@ -1,22 +1,32 @@
-import createHttpError, { HttpError } from 'http-errors'
+import logger from '../../../../infrastructure/logger'
 import UserTelegram from '../../../../models/user-telegram/user-telegram.model'
+import { IUser } from '../../../../models/user/user'
 
 export default class PostTelegramTokenAction {
   public static async invoke(
-    userId: number,
-    telegramToken: string
-  ): Promise<HttpError<400> | undefined> {
-    const user = new UserTelegram()
-    user.userId = userId
-    await user.findByUserId()
+    user: IUser,
+    telegramId: string,
+    securityToken: string
+  ): Promise<void> {
+    const userTelegram = new UserTelegram()
+    userTelegram.userId = user.id
+    await userTelegram.findByUserId()
 
-    if (user.telegramToken) {
-      return createHttpError(
-        400,
-        'Telegram token already exists'
+    if (userTelegram.telegramId) {
+      logger.info('Updating telegram user data')
+      userTelegram.securityToken = securityToken
+      userTelegram.telegramId = telegramId
+      await userTelegram.updateByUserId(
+        telegramId,
+        securityToken
       )
     } else {
-      await user.insertNewToken(telegramToken)
+      logger.info('Inserting telegram user data')
+      userTelegram.userId = user.id
+      await userTelegram.insertNewToken(
+        telegramId,
+        securityToken
+      )
     }
   }
 }

@@ -5,6 +5,7 @@ import {
   IUserSignupResponse
 } from '../../../models/user/user'
 import User from '../../../models/user/user.model'
+import passport from 'passport'
 
 const router = express.Router()
 
@@ -19,6 +20,15 @@ router.post('/signup', async (req, res, next) => {
     const response: IUserSignupResponse = await user.create(
       password
     )
+
+    passport.authenticate('local')(req, res, () => {
+      req.session.save((err) => {
+        if (err) {
+          return next(err)
+        }
+        res.redirect('/')
+      })
+    })
     res.status(response.status).send({
       message: response.message
     })

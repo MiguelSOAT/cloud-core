@@ -8,7 +8,7 @@
 // })
 
 // router.get('/', async (req, res) => {
-//   const payload = await getImages()
+//   const payload = await getFiles()
 //   res.send('Hello World')
 // })
 
@@ -49,7 +49,7 @@
 //   return arrayOfJSON[random]
 // }
 
-// function getImages(): image[] {
+// function getFiles(): image[] {
 //   const imagesARRAY = JSONtoSend(arrayOfFiles)
 //   const images: image[] = []
 //   for (let i = 0; i < 10; i++) {

@@ -8,10 +8,16 @@ const router = express.Router()
 router.post(
   '/login/password',
   passport.authenticate('local', {
-    failureRedirect: '/login'
+    failureRedirect: '/login',
+    failureFlash: true
   }),
-  (_req, res) => {
-    res.redirect('/')
+  (req, res, next) => {
+    req.session.save((err) => {
+      if (err) {
+        return next(err)
+      }
+      res.redirect('/')
+    })
   }
 )
 
