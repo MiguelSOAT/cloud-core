@@ -96,6 +96,22 @@ export default class UserTelegram
     await super.insert(this.table, keys, values)
   }
 
+  public async deleteByUserId(): Promise<void> {
+    if (!this.userId) {
+      Logger.error('[UserTelegram] User id not set', {
+        userId: this.userId
+      })
+      throw new Error('User id not set')
+    }
+    const conditions = ['userId']
+    const conditionsValues = [this.userId]
+    await super.delete(
+      this.table,
+      conditions,
+      conditionsValues
+    )
+  }
+
   private setUserFilesFromDbResponse(
     dbData: IUserTelegramDBData[]
   ): void {

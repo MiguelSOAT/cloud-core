@@ -3,4 +3,5 @@ interface Iimage {
   file_base64: string
   extension: string
   hasPreview: boolean
+  fileSize: number
 }
