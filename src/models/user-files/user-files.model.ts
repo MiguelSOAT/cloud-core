@@ -136,7 +136,8 @@ export default class UserFiles
       'fileExtension',
       'uuid',
       'size',
-      'origin'
+      'origin',
+      'originalSize'
     ]
     const values = [
       this.userId,
@@ -146,7 +147,8 @@ export default class UserFiles
       file.fileExtension,
       file.uuid,
       file.size,
-      file.origin
+      file.origin,
+      file.originalSize
     ]
     const response: any = await super.insert(
       this.table,
@@ -184,7 +186,8 @@ export default class UserFiles
           fileExtension: file.fileExtension,
           uuid: file.uuid,
           size: file.size,
-          origin: file.origin
+          origin: file.origin,
+          originalSize: file.originalSize
         })
       }
     }

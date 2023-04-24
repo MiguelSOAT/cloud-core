@@ -30,7 +30,7 @@ export default class File {
   ]
 
   static async saveInMysqlDB(
-    object: IFile,
+    file: IFile,
     user: User | undefined,
     origin: string
   ): Promise<number | undefined> {
@@ -38,13 +38,14 @@ export default class File {
     if (user?.id) {
       const userFiles = new UserFiles(user.id)
       fileId = await userFiles.insertNewFile({
-        fileName: object.file_name,
-        fileSize: object.file_size,
-        fileType: object.mime_type,
-        fileExtension: object.file_extension,
-        uuid: object.uuid,
-        size: object.size,
-        origin: origin
+        fileName: file.uuid,
+        fileSize: file.file_size,
+        fileType: file.mime_type,
+        fileExtension: file.file_extension,
+        uuid: file.uuid,
+        size: file.size,
+        origin: origin,
+        originalSize: file.file_size
       })
     }
 
@@ -52,22 +53,23 @@ export default class File {
   }
 
   static async saveInMongoDB(
-    object: IFile,
+    file: IFile,
     user: User | undefined,
     origin: string,
     fileId?: number
   ) {
     if (user?.id) {
       const fileData: IFileMongoDB = {
-        fileName: object.file_name,
-        fileSize: object.file_size,
-        fileType: object.mime_type,
-        fileExtension: object.file_extension,
-        uuid: object.uuid,
-        size: object.size,
+        fileName: file.uuid,
+        fileSize: file.file_size,
+        fileType: file.mime_type,
+        fileExtension: file.file_extension,
+        uuid: file.uuid,
+        size: file.size,
         origin: origin,
         userId: user.id,
-        fileId: fileId || 0
+        fileId: fileId || 0,
+        originalSize: file.file_size
       }
 
       const mongoClient = new MongoDBConnection()
@@ -78,7 +80,7 @@ export default class File {
   }
 
   static async processRawImage(
-    object: IFile,
+    file: IFile,
     user: User | undefined,
     origin: string
   ) {
@@ -99,7 +101,7 @@ export default class File {
 
     for (const size of sizes) {
       const resizedImageData = await this.resizeImage(
-        object,
+        file,
         user,
         size.size,
         size.relativeSize,
@@ -116,7 +118,8 @@ export default class File {
     user: User | undefined,
     size: number,
     relativeSize: number,
-    origin: string
+    origin: string,
+    originalSize: number = file.file_size
   ): Promise<IFileBase> {
     const userDirectory = `${process.env.PHOTOS_DIRECTORY}${user?.username}/`
     const fileName = file.uuid
@@ -140,18 +143,19 @@ export default class File {
       fileExtension: 'png',
       uuid: file.uuid,
       size: relativeSize,
-      origin: origin
+      origin: origin,
+      originalSize: originalSize
     }
   }
 
   static async saveTelegramDownloadedFile(
-    object: IKafkaFile,
+    file: IKafkaFile,
     response: AxiosResponse<any, any>,
     userData: User | undefined,
     userDirectory: string
   ): Promise<any> {
     return new Promise((resolve, reject) => {
-      const fileName = object.file_name
+      const fileName = file.uuid
 
       if (userData) {
         const writer: WriteStream = createWriteStream(
@@ -212,49 +216,39 @@ export default class File {
     )
   }
 
-  static isResizable = (object: IFile): boolean => {
+  static isResizable = (file: IFile): boolean => {
     return (
-      object.size === 0 &&
-      File.imageExtensions.includes(object.file_extension)
+      file.size === 0 &&
+      File.imageExtensions.includes(file.file_extension)
     )
   }
 
   static async processSavedFile(
     isSaved: boolean,
-    object: IFile,
+    file: IFile,
     user: User | undefined,
     origin: string
   ): Promise<void> {
     if (isSaved) {
-      const isAResizableImage = File.isResizable(object)
+      const isAResizableImage = File.isResizable(file)
 
       if (isAResizableImage) {
         const fixSize = 3
-        object.size = fixSize
+        file.size = fixSize
         const fileId = await File.saveInMysqlDB(
-          object,
+          file,
           user,
           origin
         )
-        await File.saveInMongoDB(
-          object,
-          user,
-          origin,
-          fileId
-        )
-        await File.processRawImage(object, user, origin)
+        await File.saveInMongoDB(file, user, origin, fileId)
+        await File.processRawImage(file, user, origin)
       } else {
         const fileId = await File.saveInMysqlDB(
-          object,
+          file,
           user,
           origin
         )
-        await File.saveInMongoDB(
-          object,
-          user,
-          origin,
-          fileId
-        )
+        await File.saveInMongoDB(file, user, origin, fileId)
       }
     }
   }

@@ -74,7 +74,7 @@ const downloadTelegramFile = async (
 
 const processDownloadedTelegramFile = async (
   user: User,
-  object: IKafkaFile,
+  file: IKafkaFile,
   response: AxiosResponse<any, any>
 ) => {
   const userDirectory = `${process.env.PHOTOS_DIRECTORY}${user.username}/`
@@ -88,7 +88,7 @@ const processDownloadedTelegramFile = async (
     })
   }
   const isSaved = await File.saveTelegramDownloadedFile(
-    object,
+    file,
     response,
     user,
     userDirectory
@@ -96,7 +96,7 @@ const processDownloadedTelegramFile = async (
 
   await File.processSavedFile(
     isSaved,
-    object,
+    file,
     user,
     'telegram'
   )

@@ -6,6 +6,7 @@ export interface IFileBase {
   uuid: string
   size: number
   origin: string
+  originalSize: number
 }
 export interface IFile extends IFileBase {
   id: number
@@ -23,4 +24,5 @@ export interface IUserFiles {
 
 export interface IUserFilesDBData extends IFile {
   userId: number
+  originalSize: number
 }
