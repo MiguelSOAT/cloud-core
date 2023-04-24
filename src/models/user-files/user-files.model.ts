@@ -82,7 +82,7 @@ export default class UserFiles
 
   public async findByFileUUID(
     uuid: string,
-    sizes: number[]
+    sizes: number[] = [0, 1, 2, 3]
   ): Promise<IUserFilesDBData | null> {
     const values = ['*']
     const conditions = ['uuid', 'userId']
@@ -134,7 +134,8 @@ export default class UserFiles
       'fileType',
       'fileExtension',
       'uuid',
-      'size'
+      'size',
+      'origin'
     ]
     const values = [
       this.userId,
@@ -143,9 +144,22 @@ export default class UserFiles
       file.fileType,
       file.fileExtension,
       file.uuid,
-      file.size
+      file.size,
+      file.origin
     ]
     await super.insert(this.table, keys, values)
+  }
+
+  public async deleteFileById(
+    fileId: number
+  ): Promise<void> {
+    const conditions = ['id', 'userId']
+    const conditionsValues = [fileId, this.userId]
+    await super.delete(
+      this.table,
+      conditions,
+      conditionsValues
+    )
   }
 
   private setUserFilesFromDbResponse(
@@ -153,6 +167,7 @@ export default class UserFiles
   ): void {
     if (dbData.length > 0) {
       this.userId = dbData[0].userId
+      this.files = []
       for (const file of dbData) {
         this.files.push({
           id: file.id,
@@ -161,7 +176,8 @@ export default class UserFiles
           fileType: file.fileType,
           fileExtension: file.fileExtension,
           uuid: file.uuid,
-          size: file.size
+          size: file.size,
+          origin: file.origin
         })
       }
     }

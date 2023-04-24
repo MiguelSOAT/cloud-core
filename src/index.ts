@@ -8,8 +8,9 @@ import getTelegramToken from './API/user/telegram-token/routes/get-telegram-toke
 import authenticateRouter from './API/authentication/routes/authenticated.route'
 import deleteTelegramTokenRouter from './API/user/telegram-token/routes/delete-telegram-token.router'
 import getFile from './API/files/routes/get-file.router'
+import deleteFileRouter from './API/files/routes/delete-file.router'
+import postFile from './API/files/routes/post-file.router'
 
-const app = express()
 import kafkaConsumer from './kafka_consumer'
 import env from 'dotenv'
 import cookieParser from 'cookie-parser'
@@ -21,6 +22,7 @@ import passportConfiguration from './infrastructure/passport'
 import cors from 'cors'
 import logger from './infrastructure/logger'
 
+const app = express()
 env.config()
 
 app.use(express.json())
@@ -58,12 +60,14 @@ app.use(function (req, res, next) {
   res.redirect('/login')
 })
 
-app.use('/v1', getFilesRouter)
 app.use('/v1', postTelegramToken)
 app.use('/v1', getTelegramToken)
 app.use('/v1', authenticateRouter)
 app.use('/v1', deleteTelegramTokenRouter)
 app.use('/v1', getFile)
+app.use('/v1', getFilesRouter)
+app.use('/v1', deleteFileRouter)
+app.use('/v1', postFile)
 
 app.use(function (req, res, next) {
   logger.error('URL 404 Not Found')

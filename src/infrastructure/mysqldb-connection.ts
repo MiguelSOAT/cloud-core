@@ -1,33 +1,29 @@
 import mysql from 'mysql'
 import logger from './logger'
+import Logger from './logger'
+import env from 'dotenv'
+
+env.config()
+
+const dbPool: mysql.Pool = mysql.createPool({
+  host: process.env.DB_HOST,
+  port: Number(process.env.DB_PORT),
+  user: process.env.DB_USER,
+  password: process.env.DB_PASSWORD,
+  database: process.env.DB_NAME,
+  charset: 'utf8mb4',
+  connectionLimit: 10
+})
 
 export default class MYSQLDBConnectionConnection {
   db: mysql.Pool
 
   constructor() {
-    this.db = mysql.createPool({
-      host: process.env.DB_HOST,
-      port: Number(process.env.DB_PORT),
-      user: process.env.DB_USER,
-      password: process.env.DB_PASSWORD,
-      database: process.env.DB_NAME,
-      charset: 'utf8mb4',
-      connectTimeout: 1000,
-      connectionLimit: 10
-    })
+    this.db = dbPool
   }
 
-  public connect() {
-    // if (this.db.state === 'disconnected') {
-    //   this.db.connect((err) => {
-    //     logger.verbose('Connecting to mysql database', {
-    //       state: this.db.state
-    //     })
-    //     if (err) {
-    //       logger.error('Error connecting to mysql database')
-    //     }
-    //   })
-    // }
+  connect(): void {
+    // this.db.connect()
   }
 
   public query(sql: string, args: any[]): any {
@@ -35,8 +31,17 @@ export default class MYSQLDBConnectionConnection {
       // To prevent SQL injection, we use the mysql library's query method. with ? placeholders
       this.db.query(sql, args, (err, rows: any[]) => {
         if (err) {
-          logger.error(
-            'Error while querying mysql database'
+          Logger.error(
+            'Error while querying mysql database',
+            {
+              host: process.env.DB_HOST,
+              port: Number(process.env.DB_PORT),
+              user: process.env.DB_USER,
+              password: process.env.DB_PASSWORD,
+              database: process.env.DB_NAME,
+              charset: 'utf8mb4',
+              connectionLimit: 10
+            }
           )
           return reject(err)
         }

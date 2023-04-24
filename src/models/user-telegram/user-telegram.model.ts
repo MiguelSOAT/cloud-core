@@ -42,7 +42,7 @@ export default class UserTelegram
   }
 
   public async findByTelegramId(
-    telegramId: string
+    telegramId: number
   ): Promise<void> {
     const values = ['*']
     const conditions = ['telegramId']

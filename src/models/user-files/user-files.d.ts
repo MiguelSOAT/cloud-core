@@ -5,6 +5,7 @@ export interface IFileBase {
   fileExtension: string
   uuid: string
   size: number
+  origin: string
 }
 export interface IFile extends IFileBase {
   id: number
