@@ -1,3 +1,4 @@
+import Logger from '../../infrastructure/logger'
 import MYSQLDB from '../mysqldb/mysqldb.model'
 import {
   IUserFilesDBData,
@@ -126,7 +127,7 @@ export default class UserFiles
 
   public async insertNewFile(
     file: IFileBase
-  ): Promise<void> {
+  ): Promise<number> {
     const keys = [
       'userId',
       'fileName',
@@ -147,7 +148,13 @@ export default class UserFiles
       file.size,
       file.origin
     ]
-    await super.insert(this.table, keys, values)
+    const response: any = await super.insert(
+      this.table,
+      keys,
+      values
+    )
+
+    return response.insertId
   }
 
   public async deleteFileById(

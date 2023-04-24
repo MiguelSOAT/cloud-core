@@ -77,7 +77,7 @@ export default class MYSQLDB<T> extends MYSQLDBConnection {
     table: string,
     keys: string[],
     values: (number | string)[]
-  ): Promise<void> {
+  ): Promise<any> {
     const sql = `INSERT INTO ${table} (${keys.join(
       ', '
     )}) VALUES (${values.map(() => '?').join(', ')})`
@@ -85,9 +85,11 @@ export default class MYSQLDB<T> extends MYSQLDBConnection {
 
     super.connect()
 
-    await super.query(sql, args)
+    const response = await super.query(sql, args)
 
     await super.close()
+
+    return response
   }
 
   public async update(

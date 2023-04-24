@@ -1,5 +1,8 @@
 import sharp from 'sharp'
-import { IFileBase } from '../user-files/user-files'
+import {
+  IFileBase,
+  IFileMongoDB
+} from '../user-files/user-files'
 import UserFiles from '../user-files/user-files.model'
 import User from '../user/user.model'
 import { AxiosResponse } from 'axios'
@@ -11,6 +14,7 @@ import fs, {
 import logger from '../../infrastructure/logger'
 import { IFile, IKafkaFile } from './file'
 import { IUser } from '../user/user'
+import MongoDBConnection from '../../infrastructure/mongodb-connection'
 
 export default class File {
   static imageExtensions: string[] = [
@@ -25,14 +29,15 @@ export default class File {
     // 'raw',
   ]
 
-  static async saveInDB(
+  static async saveInMysqlDB(
     object: IFile,
     user: User | undefined,
     origin: string
-  ) {
+  ): Promise<number | undefined> {
+    let fileId: undefined | number = undefined
     if (user?.id) {
       const userFiles = new UserFiles(user.id)
-      await userFiles.insertNewFile({
+      fileId = await userFiles.insertNewFile({
         fileName: object.file_name,
         fileSize: object.file_size,
         fileType: object.mime_type,
@@ -41,6 +46,34 @@ export default class File {
         size: object.size,
         origin: origin
       })
+    }
+
+    return fileId
+  }
+
+  static async saveInMongoDB(
+    object: IFile,
+    user: User | undefined,
+    origin: string,
+    fileId?: number
+  ) {
+    if (user?.id) {
+      const fileData: IFileMongoDB = {
+        fileName: object.file_name,
+        fileSize: object.file_size,
+        fileType: object.mime_type,
+        fileExtension: object.file_extension,
+        uuid: object.uuid,
+        size: object.size,
+        origin: origin,
+        userId: user.id,
+        fileId: fileId || 0
+      }
+
+      const mongoClient = new MongoDBConnection()
+      const db = await mongoClient.connect()
+      await db.collection('files').insertOne(fileData)
+      await mongoClient.disconnect()
     }
   }
 
@@ -79,14 +112,14 @@ export default class File {
   }
 
   static async resizeImage(
-    object: IFile,
+    file: IFile,
     user: User | undefined,
     size: number,
     relativeSize: number,
     origin: string
   ): Promise<IFileBase> {
     const userDirectory = `${process.env.PHOTOS_DIRECTORY}${user?.username}/`
-    const fileName = object.file_name
+    const fileName = file.uuid
     const resizedFileName = `resized_${size}_${fileName}`
     const filePath = `${userDirectory}${fileName}`
     const resizedFilePath = `${userDirectory}${resizedFileName}`
@@ -103,9 +136,9 @@ export default class File {
     return {
       fileName: resizedFileName,
       fileSize: resizedImage.size,
-      fileType: object.mime_type,
+      fileType: file.mime_type,
       fileExtension: 'png',
-      uuid: object.uuid,
+      uuid: file.uuid,
       size: relativeSize,
       origin: origin
     }
@@ -152,7 +185,7 @@ export default class File {
       fs.mkdirSync(userDirectory)
     }
 
-    const fileName = file.file_name
+    const fileName = `${file.uuid}`
     const destinationPath = `${userDirectory}${fileName}`
 
     fs.copyFile(
@@ -198,10 +231,30 @@ export default class File {
       if (isAResizableImage) {
         const fixSize = 3
         object.size = fixSize
-        await File.saveInDB(object, user, origin)
+        const fileId = await File.saveInMysqlDB(
+          object,
+          user,
+          origin
+        )
+        await File.saveInMongoDB(
+          object,
+          user,
+          origin,
+          fileId
+        )
         await File.processRawImage(object, user, origin)
       } else {
-        await File.saveInDB(object, user, origin)
+        const fileId = await File.saveInMysqlDB(
+          object,
+          user,
+          origin
+        )
+        await File.saveInMongoDB(
+          object,
+          user,
+          origin,
+          fileId
+        )
       }
     }
   }
