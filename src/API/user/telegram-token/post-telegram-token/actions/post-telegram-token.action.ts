@@ -1,6 +1,6 @@
-import logger from '../../../../infrastructure/logger'
-import UserTelegram from '../../../../models/user-telegram/user-telegram.model'
-import { IUser } from '../../../../models/user/user'
+import CustomLogger from '../../../../../infrastructure/custom-logger'
+import UserTelegram from '../../../../../models/user-telegram/user-telegram.model'
+import { IUser } from '../../../../../models/user/user'
 
 export default class PostTelegramTokenAction {
   public static async invoke(
@@ -13,7 +13,7 @@ export default class PostTelegramTokenAction {
     await userTelegram.findByUserId()
 
     if (userTelegram.telegramId) {
-      logger.info('Updating telegram user data')
+      CustomLogger.info('Updating telegram user data')
       userTelegram.securityToken = securityToken
       userTelegram.telegramId = telegramId
       await userTelegram.updateByUserId(
@@ -21,7 +21,7 @@ export default class PostTelegramTokenAction {
         securityToken
       )
     } else {
-      logger.info('Inserting telegram user data')
+      CustomLogger.info('Inserting telegram user data')
       userTelegram.userId = user.id
       await userTelegram.insertNewToken(
         telegramId,

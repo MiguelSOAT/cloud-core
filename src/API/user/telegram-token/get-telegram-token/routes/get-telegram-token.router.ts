@@ -1,14 +1,13 @@
 import express from 'express'
-import passport from 'passport'
-import { IUser } from '../../../../models/user/user'
 import createHttpError from 'http-errors'
 import GetTelegramTokenAction from '../actions/get-telegram-token.action'
-import logger from '../../../../infrastructure/logger'
+import CustomLogger from '../../../../../infrastructure/custom-logger'
+import { IUser } from '../../../../../models/user/user'
 
 const router = express.Router()
 
 router.get('/user/telegram', async (req, res, next) => {
-  logger.verbose('Retrieving telegram', {
+  CustomLogger.verbose('Retrieving telegram', {
     userId: req.user
   })
   const user: IUser | undefined = req.user
@@ -21,7 +20,7 @@ router.get('/user/telegram', async (req, res, next) => {
     user
   )
 
-  logger.verbose(
+  CustomLogger.verbose(
     'Telegram credentials retrieved successfully',
     {
       credentials

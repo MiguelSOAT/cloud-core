@@ -47,11 +47,7 @@ export default class MYSQLDB<T> extends MYSQLDBConnection {
     `
     const args = conditionsValues
 
-    super.connect()
-
     const rows: any[] = await super.query(sql, args)
-
-    await super.close()
 
     return rows
   }
@@ -66,11 +62,7 @@ export default class MYSQLDB<T> extends MYSQLDBConnection {
     )}`
     const args = conditionsValues
 
-    super.connect()
-
     await super.query(sql, args)
-
-    await super.close()
   }
 
   public async insert(
@@ -83,11 +75,7 @@ export default class MYSQLDB<T> extends MYSQLDBConnection {
     )}) VALUES (${values.map(() => '?').join(', ')})`
     const args = values
 
-    super.connect()
-
     const response = await super.query(sql, args)
-
-    await super.close()
 
     return response
   }
@@ -106,10 +94,6 @@ export default class MYSQLDB<T> extends MYSQLDBConnection {
     )}`
     const args = [...values, ...conditionsValues]
 
-    super.connect()
-
     await super.query(sql, args)
-
-    await super.close()
   }
 }

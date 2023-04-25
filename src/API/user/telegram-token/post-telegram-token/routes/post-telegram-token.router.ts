@@ -1,19 +1,18 @@
 import express from 'express'
-import passport from 'passport'
 import PostTelegramTokenAction from '../actions/post-telegram-token.action'
-import { IUser } from '../../../../models/user/user'
 import createHttpError from 'http-errors'
-import logger from '../../../../infrastructure/logger'
+import CustomLogger from '../../../../../infrastructure/custom-logger'
+import { IUser } from '../../../../../models/user/user'
 
 const router = express.Router()
 router.post('/user/telegram', async (req, res, next) => {
-  logger.info('Setting telegram token')
+  CustomLogger.info('Setting telegram token')
   const user: IUser | undefined = req.user
   const telegramId = req.body.telegramId
   const securityToken = req.body.securityToken
 
   if (!user) {
-    logger.error('User not found', req.user)
+    CustomLogger.error('User not found', req.user)
     return next(createHttpError(401, 'Unauthorized'))
   }
 
@@ -23,7 +22,7 @@ router.post('/user/telegram', async (req, res, next) => {
     securityToken
   )
 
-  logger.info('Telegram token setted')
+  CustomLogger.info('Telegram token setted')
 
   res.sendStatus(200).send()
 })

@@ -1,5 +1,5 @@
 import express from 'express'
-import logger from '../../../infrastructure/logger'
+import CustomLogger from '../../../../infrastructure/custom-logger'
 const router = express.Router()
 
 router.post('/logout', function (req, res, next) {
@@ -8,13 +8,13 @@ router.post('/logout', function (req, res, next) {
       if (err) {
         return next(err)
       }
-      logger.info('User logged out')
-      logger.info('User session destroyed')
+      CustomLogger.info('User logged out')
+      CustomLogger.info('User session destroyed')
       res.clearCookie('connect.sid')
       res.redirect('/')
     })
   } catch (error) {
-    logger.error('Error while logging out', {
+    CustomLogger.error('Error while logging out', {
       error
     })
   }

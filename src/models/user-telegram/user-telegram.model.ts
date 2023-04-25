@@ -1,5 +1,5 @@
-import { ITelegramCredentials } from '../../API/user/telegram-token/interfaces'
-import Logger from '../../infrastructure/logger'
+import { ITelegramCredentials } from '../../API/user/telegram-token'
+import CustomLogger from '../../infrastructure/custom-logger'
 import MYSQLDB from '../mysqldb/mysqldb.model'
 import {
   IUserTelegramDBData,
@@ -22,7 +22,7 @@ export default class UserTelegram
 
   public async findByUserId(): Promise<void> {
     if (!this.userId) {
-      Logger.error('[UserTelegram] User id not set', {
+      CustomLogger.error('[UserTelegram] User id not set', {
         userId: this.userId
       })
       throw new Error('User id not set')
@@ -63,7 +63,7 @@ export default class UserTelegram
     securityToken: string
   ): Promise<void> {
     if (!this.userId) {
-      Logger.error('[UserTelegram] User id not set', {
+      CustomLogger.error('[UserTelegram] User id not set', {
         userId: this.userId
       })
       throw new Error('User id not set')
@@ -86,7 +86,7 @@ export default class UserTelegram
     securityToken: string
   ): Promise<void> {
     if (!this.userId) {
-      Logger.error('[UserTelegram] User id not set', {
+      CustomLogger.error('[UserTelegram] User id not set', {
         userId: this.userId
       })
       throw new Error('User id not set')
@@ -98,7 +98,7 @@ export default class UserTelegram
 
   public async deleteByUserId(): Promise<void> {
     if (!this.userId) {
-      Logger.error('[UserTelegram] User id not set', {
+      CustomLogger.error('[UserTelegram] User id not set', {
         userId: this.userId
       })
       throw new Error('User id not set')

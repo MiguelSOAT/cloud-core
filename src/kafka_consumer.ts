@@ -1,6 +1,6 @@
 import axios, { AxiosResponse } from 'axios'
 import { EachMessagePayload, Kafka } from 'kafkajs'
-import logger from './infrastructure/logger'
+import CustomLogger from './infrastructure/custom-logger'
 import User from './models/user/user.model'
 import UserTelegram from './models/user-telegram/user-telegram.model'
 import fs from 'fs'
@@ -36,14 +36,14 @@ async function messageProcessor(
     ? JSON.parse(message.value.toString())
     : {}
   const filePath = object.file_path
-  logger.verbose(`Downloading file from telegram`, {
+  CustomLogger.verbose(`Downloading file from telegram`, {
     object
   })
 
   try {
     await downloadTelegramFile(filePath, token, object)
   } catch (error) {
-    logger.error(
+    CustomLogger.error(
       `Error downloading telegram file: ${error}`,
       {
         url: `${process.env.TELEGRAM_FILE_DOWNLOAD_URL}${token}/${filePath}`
@@ -80,7 +80,7 @@ const processDownloadedTelegramFile = async (
   const userDirectory = `${process.env.PHOTOS_DIRECTORY}${user.username}/`
 
   if (!fs.existsSync(userDirectory)) {
-    logger.info(
+    CustomLogger.info(
       `Creating directory new directory: ${userDirectory}`
     )
     fs.mkdirSync(userDirectory, {
@@ -109,10 +109,10 @@ const getUserByTelegramToken = async (
   await userTelegram.findByTelegramId(telegramId)
   const user = new User()
   if (userTelegram.userId) {
-    logger.info(`User found`)
+    CustomLogger.info(`User found`)
     await user.findById(userTelegram.userId)
   }
-  logger.verbose(`User`, {
+  CustomLogger.verbose(`User`, {
     id: user.id,
     username: user.username
   })

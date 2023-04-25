@@ -1,15 +1,15 @@
 import express from 'express'
-import getFilesRouter from './API/files/routes/get-files.router'
-import loginRouter from './API/authentication/routes/post-login.route'
-import signupRouter from './API/authentication/routes/post-signup.route'
-import logoutRouter from './API/authentication/routes/post-logout.route'
-import postTelegramToken from './API/user/telegram-token/routes/post-telegram-token.router'
-import getTelegramToken from './API/user/telegram-token/routes/get-telegram-token.router'
-import authenticateRouter from './API/authentication/routes/authenticated.route'
-import deleteTelegramTokenRouter from './API/user/telegram-token/routes/delete-telegram-token.router'
-import getFile from './API/files/routes/get-file.router'
-import deleteFileRouter from './API/files/routes/delete-file.router'
-import postFile from './API/files/routes/post-file.router'
+import getFilesRouter from './API/files/get-files/routes/get-files.router'
+import loginRouter from './API/authentication/post-login/routes/post-login.route'
+import signupRouter from './API/authentication/post-signup/routes/post-signup.route'
+import logoutRouter from './API/authentication/post-logout/routes/post-logout.route'
+import postTelegramToken from './API/user/telegram-token/post-telegram-token/routes/post-telegram-token.router'
+import getTelegramToken from './API/user/telegram-token/get-telegram-token/routes/get-telegram-token.router'
+import authenticateRouter from './API/authentication/authenticated/routes/authenticated.route'
+import deleteTelegramTokenRouter from './API/user/telegram-token/delete-telegram-token/routes/delete-telegram-token.router'
+import getFile from './API/files/get-file/routes/get-file.router'
+import deleteFileRouter from './API/files/delete-file/routes/delete-file.router'
+import postFile from './API/files/post-file/routes/post-file.router'
 
 import kafkaConsumer from './kafka_consumer'
 import env from 'dotenv'
@@ -20,7 +20,7 @@ import passport from 'passport'
 import createError from 'http-errors'
 import passportConfiguration from './infrastructure/passport'
 import cors from 'cors'
-import logger from './infrastructure/logger'
+import CustomLogger from './infrastructure/custom-logger'
 
 const app = express()
 env.config()
@@ -53,7 +53,7 @@ app.use('/v1', logoutRouter)
 app.use(function (req, res, next) {
   if (req.isAuthenticated()) {
     // Si el usuario está autenticado, continuar con la solicitud
-    logger.verbose('User authenticated', req.user)
+    CustomLogger.verbose('User authenticated', req.user)
     return next()
   }
   // Si el usuario no está autenticado, redirigir a la página de inicio de sesión
@@ -70,7 +70,7 @@ app.use('/v1', deleteFileRouter)
 app.use('/v1', postFile)
 
 app.use(function (req, res, next) {
-  logger.error('URL 404 Not Found')
+  CustomLogger.error('URL 404 Not Found')
   next(createError(404))
 })
 
@@ -78,19 +78,14 @@ app.listen(8080, () => {
   console.log('Server started on port 8080')
 })
 
-// error handler
 app.use(function (err: any, req: any, res: any, next: any) {
-  // set locals, only providing error in development
   res.locals.message = err.message
   res.locals.error =
     req.app.get('env') === 'development' ? err : {}
 
-  logger.error(err.message, err.stack)
+  CustomLogger.error(err.message, err.stack)
   res.status(err.status || 500)
-  // res.render('error')
   res.send(err)
 })
-
-// searchFile().catch(console.error)
 
 kafkaConsumer().catch(console.error)

@@ -5,7 +5,7 @@ import {
 } from './user'
 import MYSQLDB from '../mysqldb/mysqldb.model'
 import crypto from 'node:crypto'
-import logger from '../../infrastructure/logger'
+import CustomLogger from '../../infrastructure/custom-logger'
 import jwt from 'jsonwebtoken'
 
 export default class User
@@ -30,7 +30,7 @@ export default class User
 
   public async findByUsername(): Promise<IUserDBData | null> {
     if (!this.username) {
-      logger.error(
+      CustomLogger.error(
         `Couldn't find user in DB. Username not defined.`
       )
       return null
@@ -78,7 +78,7 @@ export default class User
       !this.hashedPassword ||
       !this.salt
     ) {
-      logger.error(
+      CustomLogger.error(
         `Couldn't intert user in DB. Username, password or salt not defined.`
       )
       throw new Error(
@@ -87,7 +87,7 @@ export default class User
     }
 
     if (!this.hashedPassword || !this.salt) {
-      logger.error(
+      CustomLogger.error(
         `Couldn't intert user in DB. Password or salt not created.`
       )
       throw new Error('Password or salt not found')
@@ -102,15 +102,18 @@ export default class User
 
     try {
       await super.insert(this.table, keys, values)
-      logger.info('User inserted in DB successfully')
+      CustomLogger.info('User inserted in DB successfully')
       await this.findByUsername()
-      logger.info('User found in DB successfully')
+      CustomLogger.info('User found in DB successfully')
       response.token = this.getSessionToken()
-      logger.verbose('User token created successfully', {
-        token: response.token
-      })
+      CustomLogger.verbose(
+        'User token created successfully',
+        {
+          token: response.token
+        }
+      )
     } catch (error: any) {
-      logger.error(
+      CustomLogger.error(
         'Error while trying to create user in DB',
         error
       )
@@ -143,13 +146,13 @@ export default class User
         'sha512'
       )
 
-      logger.info('Password encrypted successfully')
+      CustomLogger.info('Password encrypted successfully')
 
       this.hashedPassword =
         Buffer.from(hashedPassword).toString('hex')
       this.salt = Buffer.from(salt).toString('hex')
     } catch (error) {
-      logger.error(
+      CustomLogger.error(
         'Error while trying to encrypt password',
         {
           password
@@ -179,7 +182,9 @@ export default class User
       'sha512',
       function (err, hashedPassword) {
         if (err) {
-          logger.error('Error while checking password')
+          CustomLogger.error(
+            'Error while checking password'
+          )
           done(err)
         }
 
@@ -189,12 +194,12 @@ export default class User
             hashedPassword
           )
         ) {
-          logger.error('Incorrect password')
+          CustomLogger.error('Incorrect password')
           done(null, false, {
             message: 'Incorrect username or password.'
           })
         } else {
-          logger.verbose('Correct password', {
+          CustomLogger.verbose('Correct password', {
             user: {
               id: userData.id,
               username: userData.username
@@ -215,13 +220,13 @@ export default class User
     const userData = await user.findByUsername()
 
     if (!userData) {
-      logger.error('User not found', { username })
+      CustomLogger.error('User not found', { username })
       return done(null, false, {
         message: 'Incorrect username or password.'
       })
     }
 
-    logger.verbose('Checkin user credentials', {
+    CustomLogger.verbose('Checkin user credentials', {
       id: userData.id,
       username: userData.username
     })

@@ -1,8 +1,7 @@
-import { env } from 'process'
 import winston from 'winston'
 
-export default class Logger {
-  static logger = winston.createLogger({
+export default class CustomLogger {
+  static CustomLogger = winston.createLogger({
     format: winston.format.json(),
     defaultMeta: { service: 'kafka-telegram-producer' },
     transports: [
@@ -17,15 +16,15 @@ export default class Logger {
   })
 
   static info(message: string) {
-    this.logger.info(this.getData(message))
+    this.CustomLogger.info(this.getData(message))
   }
 
   static verbose(message: string, objects?: any) {
-    this.logger.info(this.getData(message, objects))
+    this.CustomLogger.info(this.getData(message, objects))
   }
 
   static error(message: string, objects?: any) {
-    this.logger.error(this.getData(message, objects))
+    this.CustomLogger.error(this.getData(message, objects))
   }
 
   static getData(message: string, objects?: any) {

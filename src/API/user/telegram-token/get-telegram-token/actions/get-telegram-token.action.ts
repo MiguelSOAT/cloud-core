@@ -1,6 +1,6 @@
-import UserTelegram from '../../../../models/user-telegram/user-telegram.model'
-import { IUser } from '../../../../models/user/user'
-import { ITelegramCredentials } from '../interfaces'
+import { ITelegramCredentials } from '../..'
+import UserTelegram from '../../../../../models/user-telegram/user-telegram.model'
+import { IUser } from '../../../../../models/user/user'
 
 export default class GetTelegramTokenAction {
   public static async invoke(

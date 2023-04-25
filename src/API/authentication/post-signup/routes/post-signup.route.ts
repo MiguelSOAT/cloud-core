@@ -1,11 +1,8 @@
 import express from 'express'
-import logger from '../../../infrastructure/logger'
-import {
-  IUserDBData,
-  IUserSignupResponse
-} from '../../../models/user/user'
-import User from '../../../models/user/user.model'
 import passport from 'passport'
+import User from '../../../../models/user/user.model'
+import CustomLogger from '../../../../infrastructure/custom-logger'
+import { IUserSignupResponse } from '../../../../models/user/user'
 
 const router = express.Router()
 
@@ -14,7 +11,7 @@ router.post('/signup', async (req, res, next) => {
   const password = req.body.password
 
   try {
-    logger.verbose('Creating user', { username })
+    CustomLogger.verbose('Creating user', { username })
     const user = new User(username)
 
     const response: IUserSignupResponse = await user.create(

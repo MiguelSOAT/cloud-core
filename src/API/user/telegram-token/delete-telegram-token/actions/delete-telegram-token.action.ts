@@ -1,5 +1,5 @@
-import UserTelegram from '../../../../models/user-telegram/user-telegram.model'
-import { IUser } from '../../../../models/user/user'
+import UserTelegram from '../../../../../models/user-telegram/user-telegram.model'
+import { IUser } from '../../../../../models/user/user'
 
 export default class DeleteTelegramTokenAction {
   public static async invoke(user: IUser): Promise<void> {

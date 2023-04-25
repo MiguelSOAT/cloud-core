@@ -1,4 +1,4 @@
-export interface IFile {
+export interface IImportFile {
   file_path: string
   file_name: string
   file_size: number
@@ -8,7 +8,7 @@ export interface IFile {
   size: number
 }
 
-export interface IKafkaFile extends IFile {
+export interface IKafkaFile extends IImportFile {
   file_id: string
   update_id: number
   telegram_token: number

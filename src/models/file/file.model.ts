@@ -11,8 +11,8 @@ import fs, {
   createWriteStream,
   fstat
 } from 'fs'
-import logger from '../../infrastructure/logger'
-import { IFile, IKafkaFile } from './file'
+import CustomLogger from '../../infrastructure/custom-logger'
+import { IImportFile, IKafkaFile } from './file'
 import { IUser } from '../user/user'
 import MongoDBConnection from '../../infrastructure/mongodb-connection'
 
@@ -30,7 +30,7 @@ export default class File {
   ]
 
   static async saveInMysqlDB(
-    file: IFile,
+    file: IImportFile,
     user: User | undefined,
     origin: string
   ): Promise<number | undefined> {
@@ -53,7 +53,7 @@ export default class File {
   }
 
   static async saveInMongoDB(
-    file: IFile,
+    file: IImportFile,
     user: User | undefined,
     origin: string,
     fileId?: number
@@ -80,7 +80,7 @@ export default class File {
   }
 
   static async processRawImage(
-    file: IFile,
+    file: IImportFile,
     user: User | undefined,
     origin: string
   ) {
@@ -114,7 +114,7 @@ export default class File {
   }
 
   static async resizeImage(
-    file: IFile,
+    file: IImportFile,
     user: User | undefined,
     size: number,
     relativeSize: number,
@@ -165,7 +165,7 @@ export default class File {
         response.data.pipe(writer)
         let error: null | any = null
         writer.on('error', (err: any) => {
-          logger.error(`ERROR writing file: ${err}`)
+          CustomLogger.error(`ERROR writing file: ${err}`)
           error = err
           writer.close()
           reject(err)
@@ -181,7 +181,10 @@ export default class File {
     })
   }
 
-  static async saveWebAppFile(user: IUser, file: IFile) {
+  static async saveWebAppFile(
+    user: IUser,
+    file: IImportFile
+  ) {
     const sourceFile = file.file_path
     const userDirectory = `${process.env.PHOTOS_DIRECTORY}${user.username}/`
 
@@ -198,7 +201,9 @@ export default class File {
       async (err) => {
         let isSaved = false
         if (!err) {
-          logger.info('File was copied to destination')
+          CustomLogger.info(
+            'File was copied to destination'
+          )
           isSaved = true
         }
 
@@ -216,7 +221,7 @@ export default class File {
     )
   }
 
-  static isResizable = (file: IFile): boolean => {
+  static isResizable = (file: IImportFile): boolean => {
     return (
       file.size === 0 &&
       File.imageExtensions.includes(file.file_extension)
@@ -225,7 +230,7 @@ export default class File {
 
   static async processSavedFile(
     isSaved: boolean,
-    file: IFile,
+    file: IImportFile,
     user: User | undefined,
     origin: string
   ): Promise<void> {

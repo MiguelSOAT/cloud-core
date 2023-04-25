@@ -1,6 +1,5 @@
 import mysql from 'mysql'
-import logger from './logger'
-import Logger from './logger'
+import CustomLogger from './custom-logger'
 import env from 'dotenv'
 
 env.config()
@@ -22,16 +21,12 @@ export default class MYSQLDBConnectionConnection {
     this.db = dbPool
   }
 
-  connect(): void {
-    // this.db.connect()
-  }
-
   public query(sql: string, args: any[]): any {
     return new Promise((resolve, reject) => {
       // To prevent SQL injection, we use the mysql library's query method. with ? placeholders
       this.db.query(sql, args, (err, rows: any[]) => {
         if (err) {
-          Logger.error(
+          CustomLogger.error(
             'Error while querying mysql database',
             {
               host: process.env.DB_HOST,
@@ -48,9 +43,5 @@ export default class MYSQLDBConnectionConnection {
         resolve(rows)
       })
     })
-  }
-
-  public async close(): Promise<void> {
-    // this.db.end()
   }
 }

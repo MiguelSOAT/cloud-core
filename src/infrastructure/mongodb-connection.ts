@@ -1,5 +1,5 @@
 import { MongoClient } from 'mongodb'
-import logger from './logger'
+import CustomLogger from './custom-logger'
 import { Db } from 'mongodb'
 
 export default class MongoDBConnection {
@@ -15,15 +15,15 @@ export default class MongoDBConnection {
   }
 
   public async connect(): Promise<Db> {
-    logger.info('Connection to MongoDB')
+    CustomLogger.info('Connection to MongoDB')
     await this.client.connect()
     const db: Db = this.client.db(process.env.MONGODB_DB)
-    logger.info('Connected to MongoDB')
+    CustomLogger.info('Connected to MongoDB')
     return db
   }
 
   public async disconnect(): Promise<void> {
     this.client.close()
-    logger.info('Disconnected from MongoDB')
+    CustomLogger.info('Disconnected from MongoDB')
   }
 }

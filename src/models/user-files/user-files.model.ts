@@ -1,4 +1,4 @@
-import Logger from '../../infrastructure/logger'
+import CustomLogger from '../../infrastructure/custom-logger'
 import MYSQLDB from '../mysqldb/mysqldb.model'
 import {
   IUserFilesDBData,
