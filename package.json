@@ -6,6 +6,7 @@
   "scripts": {
     "test": "jest",
     "start": "npm run build && node .",
+    "start:prod": "npm i && npm run build && node .",
     "start:dev": "npx nodemon",
     "build": "rimraf ./dist && tsc",
     "lint": "eslint . --ext .ts",
@@ -65,10 +66,12 @@
     "mongodb": "^5.3.0",
     "multer": "^1.4.5-lts.1",
     "mysql": "^2.18.1",
+    "npm": "^9.6.7",
     "passport": "^0.6.0",
     "passport-jwt": "^4.0.1",
     "passport-local": "^1.0.0",
     "sharp": "^0.32.0",
+    "start": "^5.1.0",
     "uuid": "^9.0.0",
     "winston": "^3.8.2"
   }
