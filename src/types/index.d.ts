@@ -6,3 +6,8 @@ declare module 'express-session' {
     messages: string[]
   }
 }
+
+export interface IRouteResponse {
+  ok: boolean
+  message: string
+}

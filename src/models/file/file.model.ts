@@ -133,14 +133,14 @@ export default class File {
         height: size,
         fit: sharp.fit.outside
       })
-      .png()
+      .webp()
       .toFile(resizedFilePath)
 
     return {
       fileName: resizedFileName,
       fileSize: resizedImage.size,
       fileType: file.mime_type,
-      fileExtension: 'png',
+      fileExtension: 'webp',
       uuid: file.uuid,
       size: relativeSize,
       origin: origin,

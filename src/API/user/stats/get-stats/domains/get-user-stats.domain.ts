@@ -26,7 +26,9 @@ export default class GetUserStatsDomain
   ): IUserStatsStorage {
     const storage: IUserStatsStorage = {
       used: 0,
-      total: 5e9
+      total: parseInt(
+        process.env.MAX_ACCOUNT_STORAGE || '1000000000'
+      )
     }
 
     for (const file of userFiles) {

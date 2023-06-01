@@ -16,7 +16,7 @@ router.post('/user/telegram', async (req, res, next) => {
     return next(createHttpError(401, 'Unauthorized'))
   }
 
-  await PostTelegramTokenAction.invoke(
+  const response = await PostTelegramTokenAction.invoke(
     user,
     telegramId,
     securityToken
@@ -24,7 +24,7 @@ router.post('/user/telegram', async (req, res, next) => {
 
   CustomLogger.info('Telegram token setted')
 
-  res.sendStatus(200).send()
+  res.json(response)
 })
 
 export default router
