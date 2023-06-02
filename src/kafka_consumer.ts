@@ -14,13 +14,15 @@ const kafka = new Kafka({
 
 const consumer = kafka.consumer({ groupId: 'test-group' })
 
-const kafkaConsumer = async () => {
+let ioSocket: any
+const kafkaConsumer = async (io: any) => {
   await consumer.connect()
   await consumer.subscribe({
     topic: 'telegram',
     fromBeginning: true
   })
 
+  ioSocket = io
   await consumer.run({
     eachMessage: messageProcessor
   })
@@ -100,6 +102,10 @@ const processDownloadedTelegramFile = async (
     user,
     'telegram'
   )
+
+  if (ioSocket) {
+    ioSocket.emit('refreshFiles', user.username)
+  }
 }
 
 const getUserByTelegramToken = async (

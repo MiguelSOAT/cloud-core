@@ -21,7 +21,27 @@ import createError from 'http-errors'
 import passportConfiguration from './infrastructure/passport'
 import CustomLogger from './infrastructure/custom-logger'
 
+import { Server } from 'socket.io'
+import http from 'http'
+
 const app = express()
+const server = http.createServer(app)
+const io = new Server(server, {
+  path: '/socket.io'
+})
+
+io.on('connection', (socket) => {
+  CustomLogger.info('A user connected')
+
+  socket.on('mensaje', (data) => {
+    CustomLogger.info('message: ' + data)
+  })
+
+  socket.on('disconnect', () => {
+    CustomLogger.info('Un cliente se ha desconectado.')
+  })
+})
+
 env.config()
 
 app.use(express.json())
@@ -64,7 +84,11 @@ app.use('/v1', deleteTelegramTokenRouter)
 app.use('/v1', getFileRouter)
 app.use('/v1', getFilesRouter)
 app.use('/v1', deleteFileRouter)
-app.use('/v1', postFileRouter)
+app.use('/v1', postFileRouter, (req, res: any) => {
+  const response = res.routeResponse
+  io.emit('refreshFiles', res.username)
+  res.json(response)
+})
 
 app.use(function (req, res, next) {
   CustomLogger.error('URL 404 Not Found', {
@@ -73,7 +97,7 @@ app.use(function (req, res, next) {
   next(createError(404))
 })
 
-app.listen(8080, () => {
+server.listen(8080, () => {
   CustomLogger.info('Server started on port 8080')
 })
 
@@ -89,4 +113,4 @@ app.use(function (err: any, req: any, res: any, next: any) {
   res.send(err)
 })
 
-kafkaConsumer().catch(console.error)
+kafkaConsumer(io).catch(console.error)

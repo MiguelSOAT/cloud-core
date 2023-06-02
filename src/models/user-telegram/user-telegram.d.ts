@@ -1,6 +1,6 @@
 export interface IUserTelegram {
   userId?: number
-  telegramId?: string
+  telegramId?: number
   securityToken?: string
   expirationDate?: Date
 }

@@ -35,7 +35,10 @@ export default class MYSQLDBConnectionConnection {
               password: process.env.DB_PASSWORD,
               database: process.env.DB_NAME,
               charset: 'utf8mb4',
-              connectionLimit: 10
+              connectionLimit: 10,
+              sql: sql,
+              args: args,
+              error: err
             }
           )
           return reject(err)

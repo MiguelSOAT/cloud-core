@@ -11,7 +11,7 @@ export default class UserTelegram
   implements IUserTelegram
 {
   public userId?: number
-  public telegramId?: string
+  public telegramId?: number
   public securityToken?: string
 
   table = 'USER_TELEGRAM'
@@ -59,7 +59,7 @@ export default class UserTelegram
   }
 
   public async updateByUserId(
-    telegramId: string,
+    telegramId: number,
     securityToken: string
   ): Promise<void> {
     if (!this.userId) {
@@ -82,7 +82,7 @@ export default class UserTelegram
   }
 
   public async insertNewToken(
-    telegramId: string,
+    telegramId: number,
     securityToken: string
   ): Promise<void> {
     if (!this.userId) {
@@ -122,7 +122,7 @@ export default class UserTelegram
 
   public getTelegramCredentials(): ITelegramCredentials {
     const credentials: ITelegramCredentials = {
-      telegramId: this.telegramId || '',
+      telegramId: this.telegramId || NaN,
       securityToken: this.securityToken || ''
     }
 

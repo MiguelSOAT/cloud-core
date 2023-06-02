@@ -195,30 +195,38 @@ export default class File {
     const fileName = `${file.uuid}`
     const destinationPath = `${userDirectory}${fileName}`
 
-    fs.copyFile(
-      sourceFile,
-      destinationPath,
-      async (err) => {
-        let isSaved = false
-        if (!err) {
-          CustomLogger.info(
-            'File was copied to destination'
-          )
-          isSaved = true
-        }
-
-        if (user?.id) {
-          const userInstance = new User()
-          await userInstance.findById(user.id)
-          await File.processSavedFile(
-            isSaved,
-            file,
-            userInstance,
-            'webapp'
-          )
-        }
+    const isSaved: boolean = await new Promise(
+      (resolve, reject) => {
+        fs.copyFile(sourceFile, destinationPath, (err) => {
+          if (err) {
+            CustomLogger.error(
+              `Error while copying file: ${err}`
+            )
+            reject(false)
+          } else {
+            resolve(true)
+          }
+        })
       }
     )
+
+    if (isSaved) {
+      CustomLogger.info('File was copied to destination')
+      if (user?.id) {
+        const userInstance = new User()
+        await userInstance.findById(user.id)
+        await File.processSavedFile(
+          isSaved,
+          file,
+          userInstance,
+          'webapp'
+        )
+      }
+    } else {
+      CustomLogger.error(
+        'File was not copied to destination'
+      )
+    }
   }
 
   static isResizable = (file: IImportFile): boolean => {

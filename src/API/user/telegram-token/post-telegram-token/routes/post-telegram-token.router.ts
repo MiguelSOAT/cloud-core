@@ -8,8 +8,8 @@ const router = express.Router()
 router.post('/user/telegram', async (req, res, next) => {
   CustomLogger.info('Setting telegram token')
   const user: IUser | undefined = req.user
-  const telegramId = req.body.telegramId
-  const securityToken = req.body.securityToken
+  const telegramId: number = req.body.telegramId
+  const securityToken: string = req.body.securityToken
 
   if (!user) {
     CustomLogger.error('User not found', req.user)
@@ -21,8 +21,6 @@ router.post('/user/telegram', async (req, res, next) => {
     telegramId,
     securityToken
   )
-
-  CustomLogger.info('Telegram token setted')
 
   res.json(response)
 })

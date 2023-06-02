@@ -1,5 +1,5 @@
 export interface ITelegramCredentials {
-  telegramId: string
+  telegramId: number
   securityToken: string
   expirationDate?: Date
 }
