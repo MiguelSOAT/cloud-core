@@ -11,7 +11,7 @@ router.post('/logout', function (req, res, next) {
       CustomLogger.info('User logged out')
       CustomLogger.info('User session destroyed')
       res.clearCookie('connect.sid')
-      res.redirect('/')
+      res.redirect('/login')
     })
   } catch (error) {
     CustomLogger.error('Error while logging out', {

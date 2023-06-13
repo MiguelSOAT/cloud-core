@@ -12,7 +12,6 @@ import deleteFileRouter from './API/files/delete-file/routes/delete-file.router'
 import postFileRouter from './API/files/post-file/routes/post-file.router'
 import getUserStatsRouter from './API/user/stats/get-stats/routes/get-user-stats.router'
 
-import kafkaConsumer from './kafka_consumer'
 import env from 'dotenv'
 import cookieParser from 'cookie-parser'
 import session from 'express-session'
@@ -20,33 +19,16 @@ import passport from 'passport'
 import createError from 'http-errors'
 import passportConfiguration from './infrastructure/passport'
 import CustomLogger from './infrastructure/custom-logger'
-
-import { Server } from 'socket.io'
-import http from 'http'
+import flash from 'connect-flash'
 
 const app = express()
-const server = http.createServer(app)
-const io = new Server(server, {
-  path: '/socket.io'
-})
-
-io.on('connection', (socket) => {
-  CustomLogger.info('A user connected')
-
-  socket.on('mensaje', (data) => {
-    CustomLogger.info('message: ' + data)
-  })
-
-  socket.on('disconnect', () => {
-    CustomLogger.info('Un cliente se ha desconectado.')
-  })
-})
 
 env.config()
 
 app.use(express.json())
 app.use(express.urlencoded({ extended: false }))
 app.use(cookieParser())
+app.use(flash())
 app.use(
   session({
     secret: process.env.SESSION_TOKEN || 'secret',
@@ -84,21 +66,13 @@ app.use('/v1', deleteTelegramTokenRouter)
 app.use('/v1', getFileRouter)
 app.use('/v1', getFilesRouter)
 app.use('/v1', deleteFileRouter)
-app.use('/v1', postFileRouter, (req, res: any) => {
-  const response = res.routeResponse
-  io.emit('refreshFiles', res.username)
-  res.json(response)
-})
+app.use('/v1', postFileRouter)
 
 app.use(function (req, res, next) {
   CustomLogger.error('URL 404 Not Found', {
     url: req.url
   })
   next(createError(404))
-})
-
-server.listen(8080, () => {
-  CustomLogger.info('Server started on port 8080')
 })
 
 app.use(function (err: any, req: any, res: any, next: any) {
@@ -113,4 +87,4 @@ app.use(function (err: any, req: any, res: any, next: any) {
   res.send(err)
 })
 
-kafkaConsumer(io).catch(console.error)
+export default app

@@ -21,9 +21,8 @@ router.post('/signup', async (req, res, next) => {
     passport.authenticate('local')(req, res, () => {
       req.session.save((err) => {
         if (err) {
-          return next(err)
+          next(err)
         }
-        res.redirect('/')
       })
     })
     res.status(response.status).send({

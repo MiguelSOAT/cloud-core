@@ -5,7 +5,6 @@ const router = express.Router()
 router.post(
   '/login/password',
   passport.authenticate('local', {
-    failureRedirect: '/login',
     failureFlash: true
   }),
   (req, res, next) => {
@@ -13,7 +12,7 @@ router.post(
       if (err) {
         return next(err)
       }
-      res.redirect('/')
+      res.send()
     })
   }
 )

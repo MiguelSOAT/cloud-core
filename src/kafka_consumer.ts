@@ -6,10 +6,13 @@ import UserTelegram from './models/user-telegram/user-telegram.model'
 import fs from 'fs'
 import File from './models/file/file.model'
 import { IKafkaFile } from './models/file/file'
+import { env } from 'process'
+
+const broker = `${env.BROKER_DOMAIN}:${env.BROKER_PORT}`
 
 const kafka = new Kafka({
   clientId: 'my-app',
-  brokers: ['broker:9092']
+  brokers: [broker]
 })
 
 const consumer = kafka.consumer({ groupId: 'test-group' })
@@ -21,7 +24,6 @@ const kafkaConsumer = async (io: any) => {
     topic: 'telegram',
     fromBeginning: true
   })
-
   ioSocket = io
   await consumer.run({
     eachMessage: messageProcessor
