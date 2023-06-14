@@ -3,10 +3,19 @@ import http from 'http'
 import CustomLogger from './infrastructure/custom-logger'
 import kafkaConsumer from './kafka_consumer'
 import app from './index'
+import fs from 'fs'
 
 const server = http.createServer(app)
 const io = new Server(server, {
   path: '/socket.io'
+})
+
+fs.mkdirSync(process.env.FILES_DIRECTORY || './storage', {
+  recursive: true
+})
+
+fs.mkdirSync(process.env.UPLOAD_DIRECTORY || './uploads', {
+  recursive: true
 })
 
 io.on('connection', (socket) => {

@@ -17,6 +17,12 @@ const jestConfig: JestConfigWithTsJest = {
     '**/__tests__/**/*.ts?(x)',
     '**/?(*.)+(spec|test).ts?(x)'
   ],
+  transformIgnorePatterns: [
+    '/node_modules/(?!form-data).+\\.js$'
+  ],
+  moduleNameMapper: {
+    '^@tests/(.*)$': '<rootDir>/tests/$1'
+  },
   verbose: true
 }
 

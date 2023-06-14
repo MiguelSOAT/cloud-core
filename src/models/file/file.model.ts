@@ -121,7 +121,7 @@ export default class File {
     origin: string,
     originalSize: number = file.file_size
   ): Promise<IFileBase> {
-    const userDirectory = `${process.env.PHOTOS_DIRECTORY}${user?.username}/`
+    const userDirectory = `${process.env.FILES_DIRECTORY}${user?.username}/`
     const fileName = file.uuid
     const resizedFileName = `resized_${size}_${fileName}`
     const filePath = `${userDirectory}${fileName}`
@@ -186,18 +186,18 @@ export default class File {
     file: IImportFile
   ) {
     const sourceFile = file.file_path
-    const userDirectory = `${process.env.PHOTOS_DIRECTORY}${user.username}/`
-
+    const userDirectory = `${process.env.FILES_DIRECTORY}${user.username}/`
+    CustomLogger.verbose(`Hasta AQUI 3`)
     if (!fs.existsSync(userDirectory)) {
       fs.mkdirSync(userDirectory)
     }
 
     const fileName = `${file.uuid}`
     const destinationPath = `${userDirectory}${fileName}`
-
     const isSaved: boolean = await new Promise(
       (resolve, reject) => {
         fs.copyFile(sourceFile, destinationPath, (err) => {
+          CustomLogger.verbose(`Hasta AQUI 3`)
           if (err) {
             CustomLogger.error(
               `Error while copying file: ${err}`

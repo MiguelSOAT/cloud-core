@@ -1,8 +1,8 @@
 import request from 'supertest'
-import app from '../../../../src/index'
+import app from '../../../src/index'
 import * as uuid from 'uuid'
 import { before } from 'node:test'
-import MongoDBConnection from '../../../../src/infrastructure/mongodb-connection'
+import MongoDBConnection from '../../../src/infrastructure/mongodb-connection'
 
 const fileMongo = {
   userId: 123120023,
