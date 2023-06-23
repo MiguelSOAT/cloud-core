@@ -8,10 +8,7 @@ import crypto from 'node:crypto'
 import CustomLogger from '../../infrastructure/custom-logger'
 import jwt from 'jsonwebtoken'
 
-export default class User
-  extends MYSQLDB<IUserDBData>
-  implements IUser
-{
+export default class User extends MYSQLDB<IUserDBData> {
   public id?: number
   public username?: string
   hashedPassword?: string
