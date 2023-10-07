@@ -9,7 +9,7 @@ export default class DeleteFileService {
     user: User,
     userFiles: UserFiles
   ): Promise<void> {
-    const filePath = `${process.env.FILES_DIRECTORY}${user.username}`
+    const filePath = `${process.env.FILES_DIRECTORY}/${user.username}`
     const files: IFile[] = userFiles.files
 
     for (const file of files) {

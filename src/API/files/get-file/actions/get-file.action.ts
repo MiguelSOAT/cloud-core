@@ -25,7 +25,7 @@ export default class GetFileAction {
 
     let fileDirectory: IDownloadFile | null = null
     if (rawFile) {
-      const filePath = `${process.env.FILES_DIRECTORY}${user.username}`
+      const filePath = `${process.env.FILES_DIRECTORY}/${user.username}`
       const fileName = rawFile.fileName
       logger.verbose('User files found', { rawFile })
       fileDirectory = {

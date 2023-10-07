@@ -20,4 +20,9 @@ export default function passportConfiguration() {
       done(null, userData)
     })
   })
+
+  passport.authenticate('local', {
+    successRedirect: '/v1/login',
+    failureRedirect: '/v1/login'
+  })
 }

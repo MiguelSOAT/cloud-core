@@ -15,7 +15,7 @@ export default class GetFilesService {
     logger.verbose('Getting user files', { userFiles })
     if (!userFiles.files) return []
     const files: IGetFile[] = []
-    const path = `${process.env.FILES_DIRECTORY || ''}${
+    const path = `${process.env.FILES_DIRECTORY || ''}/${
       user.username
     }/`
 

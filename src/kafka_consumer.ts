@@ -81,7 +81,7 @@ const processDownloadedTelegramFile = async (
   file: IKafkaFile,
   response: AxiosResponse<any, any>
 ) => {
-  const userDirectory = `${process.env.FILES_DIRECTORY}${user.username}/`
+  const userDirectory = `${process.env.FILES_DIRECTORY}/${user.username}/`
 
   if (!fs.existsSync(userDirectory)) {
     CustomLogger.info(
